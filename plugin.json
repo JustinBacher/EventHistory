@@ -1,0 +1,9 @@
+{
+    "name": "Event History",
+    "author": "Jab",
+    "description": "Shows historical events ran and allows for replaying of them on demand.",
+    "category": "Core",
+    "url": "https://www.polypoplive.com",
+    "version": "1.0",
+    "min_app_version": "1.0"
+}

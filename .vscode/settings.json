@@ -1,0 +1,24 @@
+{
+    "Lua.diagnostics.globals": [
+        "Instance",
+        "properties",
+        "getNetwork",
+        "getLocalFolder",
+        "getOS",
+        "json",
+        "getInput",
+        "fetch",
+        "jsonify",
+        "getAnimator",
+        "milliseconds",
+        "getEditor",
+        "getUI"
+    ],
+    "Lua.diagnostics.disable": [
+        "duplicate-set-field"
+    ],
+    "files.associations": {
+        "*.text": "xml",
+        "*.uix": "xml"
+    }
+}

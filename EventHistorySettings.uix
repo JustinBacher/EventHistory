@@ -1,0 +1,6 @@
+<uix type="Source">
+  <add_menu_group>Event Managers</add_menu_group>
+  <category>Event History</category>
+  <unique>true</unique>
+  <name>Event History</name>
+</uix>

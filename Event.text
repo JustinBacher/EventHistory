@@ -1,0 +1,6 @@
+<stringtable>
+  <ID name="Self_ToolTip">Represents some action that can happen in the queue</ID>
+  <ID name="Settings_Delay_ToolTip">The delay between queued actions.</ID>
+  <ID name="Settings_ClearQueue_ToolTip">Removes all queued actions from the queue.</ID>
+  <ID name="Actions_ToolTip">Events that can happen in the queue.</ID>
+</stringtable>
