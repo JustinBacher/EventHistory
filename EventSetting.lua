@@ -9,3 +9,7 @@ end
 function Instance:onSettingUpdate()
     self:getParent():getParent()
 end
+
+function Instance:alertName()
+    return self.properties:find("Name")
+end

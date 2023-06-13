@@ -81,41 +81,36 @@ function Instance:listen(prop, group)
     end
 end
 
-function Instance:searchProperties(source, group)
-    if source.properties == nil then return end
-    local allProps = {}
-    local prop, propName
-
-    for i = 1, source.properties:getPropertyCount() do
-        prop = source.properties:getPropertyByIndex(i)
-        propName = prop:getName()
-        allProps[buildAlertName(prop, true)] = prop
-
-        if group.properties:find(propName) then
-            getEditor():createUIX(group, "EventGroupAlert")
-        end
-        self:listen(prop)
-    end
-
-    for j = 1, group:getObjectCount() do
-        prop = group:getObjectByIndex(j)
-
-        if allProps[prop:getName()] == nil then
-            getEditor():removeFromLibrary(prop)
-        end
-    end
-end
-
 function Instance:gatherAllAlerts()
     local kit = getEditor():getSourceLibrary()
+    local groupKit = self.properties:find("Events")
+    local allGroups = {}
+    local allKit = {}
+
+    for i = 1, groupKit:getObjectCount() do
+        local group = groupKit:getObjectByIndex(i)
+        allGroups[group:groupName()] = group
+    end
     
     for i = 1, kit:getObjectCount() do
         local prop = kit:getObjectByIndex(i)
-        local group = getEditor:createUIX(self.parentSettings.Events:getKit(), "EventGroup")
+        local propName = prop:getName()
+        local group = allGroups[propName]
         
-        group:setName(prop:getName())
+        if group == nil then
+            group = getEditor:createUIX(self.parentSettings.Events:getKit(), "EventSettingGroup")
+            group:setName(propName)
+        end
+        
+        allKit[propName] = prop
         self:searchProperties(prop, group)
 	end
+
+    for name, group in pairs(allGroups) do
+        if allKit[name] ~= nil then
+            getUI():removeFromLibrary(group)
+        end
+    end
 end
 
 function Instance:onSourceLibraryUpdate()

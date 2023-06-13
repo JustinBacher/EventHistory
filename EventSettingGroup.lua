@@ -20,3 +20,18 @@ function Instance:removeAlert(alert)
         end
     end
 end
+
+funciton Instance:groupName()
+    return self.properties:getPropertyByIndex(1):getName()
+end
+
+function Instance:hasAlert(alertName)
+    local kit = self.properties:find("Events")
+
+    for i = 1, kit:getObjectCount() do
+        if kit:getObjectByIndex(i):alertName() == alertName
+            return true
+    end
+
+    return false
+end
