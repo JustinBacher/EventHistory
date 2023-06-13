@@ -4,6 +4,14 @@ Instance.properties = properties({
     }}
 })
 
+function Instance:initName(name)
+    self.properties:getPropertyByIndex(1):setName(name)
+end
+
+function Instance:groupName()
+    return self.properties:getPropertyByIndex(1):getName()
+end
+
 function Instance:addAlert(alert)
     local eventSetting = getEditor():createUIX(self.properties.Name:find("Events"), "Event Setting")
     eventSetting:initAlert(alert)
@@ -19,10 +27,6 @@ function Instance:removeAlert(alert)
             getEditor():removeFromLibrary(eventSetting)
         end
     end
-end
-
-funciton Instance:groupName()
-    return self.properties:getPropertyByIndex(1):getName()
 end
 
 function Instance:hasAlert(alertName)
