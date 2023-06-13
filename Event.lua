@@ -1,11 +1,10 @@
 Instance.properties = properties({
-    {name="Name", type="Bool", onUpdate="updateState"},
+    {name="Name", type="PropertyGroup", onUpdate={
+        {name="Replay", type="Action"},
+    }, ui={expand=true}},
 })
 
-function Instance:initName(name)
-    self:setName(name)
+function Instance:initName(eventName)
+    self.properties:find("Name"):setName(eventName)
 end
 
-function Instance:updateState(state)
-    print("State: " .. state)
-end

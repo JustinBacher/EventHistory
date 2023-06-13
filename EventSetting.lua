@@ -1,12 +1,11 @@
 Instance.properties = properties({
-    {name="Name", type="Bool"},
+    {name="Name", type="Bool", value=true, onUpdate="onSettingUpdate"},
 })
 
-function Instance:onInit()
-    
+function Instance:initAlert(alert)
+    self.properties.Name:setName(alert:getName())
 end
 
-function Instance:initParams(alert)
-    self.alert = alert
-    self.properties.Name:setName(alert:getName())
+function Instance:onSettingUpdate()
+    self:getParent():getParent()
 end

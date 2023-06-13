@@ -4,19 +4,19 @@ Instance.properties = properties({
     }}
 })
 
-function Instance:addEvent(eventName)
+function Instance:addAlert(alert)
     local eventSetting = getEditor():createUIX(self.properties.Name:find("Events"), "Event Setting")
-    eventSetting.properties:find("Replay"):setName(eventName)
+    eventSetting:initAlert(alert)
 end
 
-function Instance:findEvent(eventName)
+function Instance:removeAlert(alert)
     local kit = self.properties.Name:find("Events")
 
     for i = 1, kit:getObjectCount() do
         local eventSetting = kit:getObjectByIndex(i)
 
-        if eventSetting:getName() == eventName then
-            return eventSetting
+        if eventSetting.alert == alert then
+            getEditor():removeFromLibrary(eventSetting)
         end
     end
 end
