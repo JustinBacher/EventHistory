@@ -4,133 +4,68 @@ Instance.properties = properties({
     {name="Events", type="ObjectSet", ui={readonly=true}},
 })
 
-local buildAlertName = function(alert, isForSettings)
-    local name, parent
-    local parentName = parent:getName()
+function Instance:setup(parent)
+    self.settings = parent
+    getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAllAlerts)
+    self:clearEvents()
+    self.limit = self.settings.properties.Limit
+    self:gatherAllAlerts()
+end
 
-    if isForSettings then
-        name = ""
-        parent = alert:getParent()
-    else
-        name = alert.alert:getName()
-        parent = alert.alert:getParent()
-    end
-
-    while parentName ~= "Global" do
-        name = parentName .. " > " .. name
-        parent = parent:getParent()
-        parentName = parent:getName()
-    end
-
-    if isForSettings then
-        return name
-    else
-        return os.date("%H:%M", alert.time) .. " | " .. name
+function Instance:clearEvents()
+    self.queue = {}
+    local kit = self.properties.Events:getKit()
+    for i = 1, kit:getObjectCount() do
+        getEditor():removeFromLibrary(kit:getObjectByIndex(i))
     end
 end
 
-function Instance:onInit()
-    self:setName("Event History")
-    self.queue = Queue:new()
-    self:gatherAllAlerts()
-    getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAllAlerts)
-    self.settings = self:getParent()
+function Instance:setEventLimit(limit)
+    local kit = self.properties.Events:getKit()
+    self.limit = limit
+    for i = limit, #self.queue do
+        getEditor():removeFromLibrary(kit:getObjectByIndex(i))
+        self.queue[i] = nil
+    end
 end
 
 function Instance:onRun()
     getUI():select(self:getProperties():getPropertyByIndex(1))
 end
 
-function Instance:listen(prop, group)
-    if type(prop) == "Alert" then
-        local name = buildAlertName(prop, true)
-        if not self.settings:hasAlert(name, group) then
-            prop:addEventListener("onAlert", self, self.onAlert)
-            self.settings:addAlert(name, group)
-        end
-    elseif type(prop) == "PolyPopObject" then
-        for i = 1, prop.properties:getPropertyCount() do
-            self:listen(prop.properties:getPropertyByIndex(i), group)
-        end
-    elseif type(prop) == "PropertyGroup" then
-        for i = 1, prop:getPropertyCount() do
-            self:listen(prop:getPropertyByIndex(i), group)
-        end
-    elseif type(prop) == "ObjectSet" then
-        for i = 1, prop:getKit():getObjectCount() do
-            self:listen(prop:getKit():getObjectByIndex(i), group)
-        end
-    end
-end
-
 function Instance:gatherAllAlerts()
-    local libraryKit = getEditor():getSourceLibrary()
-    local groupKit = self.settings.properties:find("Events")
-    local kitGroups = {}
-    local libraryGroups = {}
+    local groupKit = self.settings.properties.Events:getKit()
+    local groupKits = {}
 
+    print("Count: " .. groupKit:getObjectCount())
     for i = 1, groupKit:getObjectCount() do
         local group = groupKit:getObjectByIndex(i)
-        kitGroups[group:groupName()] = group
+        groupKits[group:source()] = group
     end
-    
-    for i = 1, libraryKit:getObjectCount() do
-        local prop = libraryKit:getObjectByIndex(i)
-        local propName = prop:getName()
-        local group = kitGroups[propName]
-        
-        if not group then
-            group = getEditor:createUIX(groupKit, "EventSettingGroup")
-            group:setName(propName)
+
+    for _, source in kit(getEditor():getSourceLibrary()) do
+        if source ~= self.settings then
+            local group = groupKits[source] or getEditor():createUIX(groupKit, "EventSettingGroup")
+            group:initSource(source)
+            groupKits[source] = nil
         end
-        
-        libraryGroups[propName] = prop
-        self:searchProperties(prop, group)
 	end
 
-    for name, group in pairs(kitGroups) do
-        if not libraryGroups[name] then
-            getUI():removeFromLibrary(group)
-        end
+    for _, group in pairs(groupKits) do
+        getEditor():removeFromLibrary(group)
     end
 end
 
-function Instance:onAlert(alertOrArgs, alert)
-    print("Alerted")
-    local args = alertOrArgs
-    if alert == nil then
-        alert = alertOrArgs
-        args = nil
+function Instance:onAlert(...)
+    local props = self.properties.Events:getKit()
+    table.insert(self.queue, 1, {...})
+
+    if #self.queue <= self.limit then
+        table.remove(self.queue)
     end
 
-    self.queue:push({alert=alert, args=args, time=os.time()})
-    local props = self:getProperties()
-
-    local i = 1
-    for event in self.queue:iterRight() do
-        local eventProp = props:getPropertyByIndex(i)
-        eventProp:setName(buildAlertName(event))
-        eventProp.event = event
-        getUI():setUIProperty({{obj=eventProp, visible=true}})
-        i = i + 1
+    for i, eventData in ipairs(self.queue) do
+        local prop = props:getObjectByIndex(i) or getEditor():createUIX(props, "Event")
+        prop:setup(eventData)
     end
-end
-
-function Instance:replayEvent(alert)
-    local props = self:getProperties()
-    for i = 1, props:getPropertyCount() do
-        if props:getPropertyByIndex(i) == alert then
-            local event = self.queue:contents()
-            return event.alert:raise(event.args)
-        end
-    end
-    local i = 1
-end
-
-function Instance:ReplayUpdated()
-    print("RU")
-end
-
-function Instance:Replay(btn)
-    print("Replay pressed" .. " | " .. type(btn))
 end

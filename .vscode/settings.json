@@ -12,7 +12,8 @@
         "getAnimator",
         "milliseconds",
         "getEditor",
-        "getUI"
+        "getUI",
+        "kit"
     ],
     "Lua.diagnostics.disable": [
         "duplicate-set-field"
