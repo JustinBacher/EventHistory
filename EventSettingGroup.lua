@@ -1,41 +1,87 @@
+require "util"
+
 Instance.properties = properties({
+    {name="Source", type="Reference", cast_types={"Source"}},
     {name="Name", type="PropertyGroup", items={
+        {name="Enabled", type="Bool", value=true, onUpdate="onEnabledUpdate"},
         {name="Events", type="ObjectSet"},
     }}
 })
 
-function Instance:initName(name)
-    self.properties:getPropertyByIndex(1):setName(name)
+function Instance:onInit()
+
 end
 
-function Instance:groupName()
-    return self.properties:getPropertyByIndex(1):getName()
+function Instance:onPostInit(constructor_type)
+    if constructor_type == "File" then
+        getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAlerts)
+    end
+    self.eventsUtility = self:getParent().eventsUtility
 end
 
-function Instance:addAlert(alert)
-    local eventSetting = getEditor():createUIX(self.properties.Name:find("Events"), "Event Setting")
-    eventSetting:initAlert(alert)
+function Instance:initSource(source)
+    self.properties.Source:setObject(source)
+    self:gatherAlerts()
+    self.properties.Name:setName(source:getName())
+    getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAlerts)
 end
 
-function Instance:removeAlert(alert)
-    local kit = self.properties.Name:find("Events")
+function Instance:source()
+    return self.properties.Source:getObject()
+end
 
-    for i = 1, kit:getObjectCount() do
-        local eventSetting = kit:getObjectByIndex(i)
+function Instance:searchForAlerts(currentAlerts, prop)
+    local propType = type(prop)
 
-        if eventSetting.alert == alert then
-            getEditor():removeFromLibrary(eventSetting)
+    if propType == "Alert" then
+        local alert = currentAlerts[prop]
+
+        if alert == nil then
+            alert = getEditor():createUIX(self.properties.Name.Events:getKit(), "EventSetting")
+        end
+
+        alert:initAlert(prop)
+        currentAlerts[prop] = nil
+
+    elseif propType == "PolyPopObject" then
+        for i = 1, prop.properties:getPropertyCount() do
+            self:searchForAlerts(currentAlerts, prop.properties:getPropertyByIndex(i))
+        end
+
+    elseif propType == "PropertyGroup" then
+        for i = 1, prop:getPropertyCount() do
+            self:searchForAlerts(currentAlerts, prop:getPropertyByIndex(i))
+        end
+
+    elseif propType == "ObjectSet" then
+        prop = prop:getKit()
+        for i = 1, prop:getObjectCount() do
+            self:searchForAlerts(currentAlerts, prop:getObjectByIndex(i))
         end
     end
 end
 
-function Instance:hasAlert(alertName)
-    local kit = self.properties:find("Events")
+function Instance:gatherAlerts()
+    local source = self.properties.Source:getObject()
 
-    for i = 1, kit:getObjectCount() do
-        if kit:getObjectByIndex(i):alertName() == alertName
-            return true
+    if source == nil then
+        getEditor():removeFromLibrary(self)
+        return
     end
 
-    return false
+    local eventsKit = self.properties.Name.Events:getKit()
+    local allEventAlerts = {}
+
+    for i = 1, eventsKit:getObjectCount() do
+        local eventKit = eventsKit:getObjectByIndex(i)
+        allEventAlerts[eventKit:alert()] = eventKit
+    end
+
+    for i = 1, source.properties:getPropertyCount() do
+        self:searchForAlerts(allEventAlerts, source.properties:getPropertyByIndex(i))
+    end
+
+    for _, eventKit in pairs(allEventAlerts) do
+        getEditor():removeFromLibrary(eventKit)
+    end
 end
