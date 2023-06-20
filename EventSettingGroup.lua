@@ -1,32 +1,19 @@
-require "util"
-
 Instance.properties = properties({
-    {name="Source", type="Reference", cast_types={"Source"}},
-    {name="Name", type="PropertyGroup", items={
-        {name="Enabled", type="Bool", value=true, onUpdate="onEnabledUpdate"},
-        {name="Events", type="ObjectSet"},
-    }}
+    {name="Source", type="Reference", ui={visible=false}},
+    {name="Events", type="ObjectSet", ui={expand=true, readonly=true}},
 })
 
-function Instance:onInit()
-
-end
-
 function Instance:onPostInit(constructor_type)
-    if constructor_type == "File" then
-        getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAlerts)
-    end
-    self.eventsUtility = self:getParent().eventsUtility
+    getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAlerts)
 end
 
 function Instance:initSource(source)
     self.properties.Source:setObject(source)
+    self.name = source:getName()
     self:gatherAlerts()
-    self.properties.Name:setName(source:getName())
-    getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAlerts)
 end
 
-function Instance:source()
+function Instance:getSource()
     return self.properties.Source:getObject()
 end
 
@@ -37,10 +24,10 @@ function Instance:searchForAlerts(currentAlerts, prop)
         local alert = currentAlerts[prop]
 
         if alert == nil then
-            alert = getEditor():createUIX(self.properties.Name.Events:getKit(), "EventSetting")
+            alert = getEditor():createUIX(self.Events:getKit(), "EventSetting")
+            alert:initAlert(prop)
         end
 
-        alert:initAlert(prop)
         currentAlerts[prop] = nil
 
     elseif propType == "PolyPopObject" then
@@ -63,18 +50,12 @@ end
 
 function Instance:gatherAlerts()
     local source = self.properties.Source:getObject()
-
-    if source == nil then
-        getEditor():removeFromLibrary(self)
-        return
-    end
-
-    local eventsKit = self.properties.Name.Events:getKit()
+    local eventsKit = self.properties.Events:getKit()
     local allEventAlerts = {}
 
     for i = 1, eventsKit:getObjectCount() do
         local eventKit = eventsKit:getObjectByIndex(i)
-        allEventAlerts[eventKit:alert()] = eventKit
+        allEventAlerts[eventKit:getAlert()] = eventKit
     end
 
     for i = 1, source.properties:getPropertyCount() do
@@ -84,4 +65,6 @@ function Instance:gatherAlerts()
     for _, eventKit in pairs(allEventAlerts) do
         getEditor():removeFromLibrary(eventKit)
     end
+
+    getUI():setUIProperty({{obj=self, visible=self.properties.Events:getKit():getObjectCount() > 0}})
 end

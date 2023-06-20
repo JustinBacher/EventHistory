@@ -13,7 +13,8 @@
         "milliseconds",
         "getEditor",
         "getUI",
-        "kit"
+        "kit",
+        "seconds"
     ],
     "Lua.diagnostics.disable": [
         "duplicate-set-field"
