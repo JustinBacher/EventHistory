@@ -1,5 +1,5 @@
 Instance.properties = properties({
-    {name="Limit", type="Int", value=50, range={min=10, max=500}, ui={stride=5, easing=100}, onUpdate="onLimitUpdate"},
+    {name="Limit", type="Int", value=50, range={min=10, max=100}, ui={stride=5, easing=50}, onUpdate="onLimitUpdate"},
     {name="Events", type="ObjectSet", ui={readonly=true}},
 })
 
