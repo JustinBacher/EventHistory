@@ -1,35 +1,16 @@
 Instance.properties = properties({
-    {name="Name", type="PropertyGroup", onUpdate={
-        {name="Replay", type="Action"},
-    }, ui={expand=true}},
+    {name="Event", type="Reference", ui={readonly=true}},
+    {name="Replay", type="Action"},
 })
 
-local buildAlertName = function(alert, isForSettings)
-    local name, parent
-    local parentName = parent:getName()
-
-    if isForSettings then
-        name = ""
-        parent = alert:getParent()
-    else
-        name = alert.alert:getName()
-        parent = alert.alert:getParent()
-    end
-
-    while parentName ~= "Global" do
-        name = parentName .. " > " .. name
-        parent = parent:getParent()
-        parentName = parent:getName()
-    end
-
-    if isForSettings then
-        return name
-    else
-        return os.date("%H:%M", alert.time) .. " | " .. name
-    end
+function Instance:setup(data)
+    local alert = data.alert
+    self.properties.Event:setObject(alert)
+    self.name = string.format("%s | %s", os.date("%c ", data.time), alert:getName())
+    self.action = data.action
+    self.args = data.args
 end
 
-function Instance:setup(alert, args)
-    self.alert = alert
+function Instance:Replay()
+    self.action:run(self.args)
 end
-
