@@ -30,7 +30,7 @@ function Instance:onAlert(alertOrArgs, alert)
         getEditor():getUtilities(utils)
         for _, util in ipairs(utils) do
             if util:getUIXName() == "EventHistory:Event History Events" then
-                if util.onAlert then
+                if util.onAlert and util.properties.find then
                     _G.eventHistoryUtility = util
                 else
                     return

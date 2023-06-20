@@ -1,9 +1,5 @@
 require "util"
 
-Instance.properties = properties({
-    {name="Events", type="ObjectSet", ui={readonly=true}},
-})
-
 function Instance:onInit()
     local button_img = getEditor():createNewFromFile(self:getObjectKit(), "Static2DTexture", getLocalFolder() .. "Event_History_Button.png")
 	self:addCast(button_img)
@@ -15,11 +11,15 @@ function Instance:setup(parent)
     self:setEventLimit(parent.properties.Limit)
 end
 
-function Instance:onPostInit()
+function Instance:onPostInit(constructor_type)
     getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAllAlerts)
     self:setName("Event History")
     getAnimator():createTimer(self, self.clearEvents, seconds(0.5))
     getAnimator():createTimer(self, self.gatherAllAlerts, seconds(0.5))
+
+    if constructor_type == "Default" then
+        self:clearEvents()
+    end
 end
 
 function Instance:clearEvents()
@@ -92,7 +92,11 @@ function Instance:onAlert(...)
 end
 
 function Instance:refreshEvents()
-    local props = self.properties.Events
+    if not self.properties.find then
+        return
+    end
+
+    local props = self.properties:find("Events")
     local firstFew = {}
     local prop
 
