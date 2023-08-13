@@ -1,4 +1,5 @@
 Instance.properties = properties({
+    {name="ClearQueue", type="Action"},
     {name="Limit", type="Int", value=50, range={min=10, max=100}, ui={stride=5, easing=50}, onUpdate="onLimitUpdate"},
     {name="Events", type="ObjectSet", ui={readonly=true}},
 })
@@ -9,25 +10,16 @@ function Instance:onInit(constructor_type)
     end
 end
 
-function Instance:onPostInit()
-    local utils = {}
-    getEditor():getUtilities(utils)
-    for _, util in ipairs(utils) do
-        if util:getUIXName() == "EventHistory:Event History Events" then
-            util.settings = self
-            util:setup(self)
-            break
-        end
-    end
+function Instance:ClearQueue()
+    self.utility.queue = {}
+    self.utility:clearEvents()
 end
 
-function Instance:onLimitUpdate(limit)
-    local utils = {}
-    getEditor():getUtilities(utils)
-    for _, util in ipairs(utils) do
-        if util:getUIXName() == "EventHistory:Event History Events" then
-        util:setEventLimit(limit:getValue())
-            break
-        end
-    end
+function Instance:onPostInit(constructor_type)
+    self.utility = self:getObjectKit():findObjectByName("Historical Events")
+    print(tostring(self.utility))
+end
+
+function Instance:onLimitUpdate()
+    self.utility:setEventLimit()
 end

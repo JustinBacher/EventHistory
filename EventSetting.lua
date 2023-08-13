@@ -24,23 +24,19 @@ function Instance:getAlert()
     return self.properties.Alert:getObject()
 end
 
-function Instance:onAlert(alertOrArgs, alert)
-    if _G.eventHistoryUtility == nil then
-        local utils = {}
-        getEditor():getUtilities(utils)
-        for _, util in ipairs(utils) do
-            if util:getUIXName() == "EventHistory:Event History Events" then
-                if util.onAlert and util.properties.find then
-                    _G.eventHistoryUtility = util
-                else
-                    return
-                end
-                break
-            end
-        end
+function Instance:ensureUtility()
+    if not self.utility then
+        self.utility = self:getParent():getParent().utility
     end
+    return self.utility
+end
+
+function Instance:onAlert(alertOrArgs, alert)
     if self.enabled then
-        _G.eventHistoryUtility:onAlert(
+        if not self:ensureUtility() then
+            return
+        end
+        self.utility:onAlert(
             alert or alertOrArgs,
             alert and alertOrArgs
         )
@@ -57,4 +53,8 @@ end
 
 function Instance:onEnabledUpdate()
     self.enabled = self.properties:getPropertyByIndex(2):getValue()
+
+    if self:ensureUtility() and not self.enabled then
+        self.utility:removeEventsForAlert(self:getAlert())
+    end
 end
