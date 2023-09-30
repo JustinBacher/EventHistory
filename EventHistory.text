@@ -1,4 +1,4 @@
 <stringtable>
-  <ID name="Self_ToolTip">Represents some action that can happen in the queue</ID>
+  <ID name="Self_ToolTip">Shows all events that have happened in the current session.</ID>
   <ID name="Info_ToolTip">Info</ID>
 </stringtable>

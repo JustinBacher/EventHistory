@@ -1,3 +1,3 @@
 <stringtable>
-  <ID name="Self_ToolTip">Represents some action that can happen in the queue</ID>
+  <ID name="Self_ToolTip">Settings for an alert.</ID>
 </stringtable>
