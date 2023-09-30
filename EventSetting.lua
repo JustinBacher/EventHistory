@@ -5,7 +5,14 @@ Instance.properties = properties({
 
 function Instance:onPostInit(constructor_type)
     if constructor_type == "File" then
-        self.name = self:getAlert():getName()
+        local alert = self:getAlert()
+
+        if not alert then
+            getEditor():removeFromLibrary(self)
+            return
+        end
+
+        self.name = alert:getName()
         self:listen()
     end
 

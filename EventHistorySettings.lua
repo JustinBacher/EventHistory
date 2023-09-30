@@ -17,7 +17,6 @@ end
 
 function Instance:onPostInit(constructor_type)
     self.utility = self:getObjectKit():findObjectByName("Historical Events")
-    print(tostring(self.utility))
 end
 
 function Instance:onLimitUpdate()

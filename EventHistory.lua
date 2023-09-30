@@ -63,7 +63,15 @@ function Instance:gatherAllAlerts()
 
     for i = 1, groupKit:getObjectCount() do
         local group = groupKit:getObjectByIndex(i)
-        groupKits[group:getSource()] = group
+        local groupSource = group:getSource()
+
+        if not groupSource then
+            goto continue
+        end
+
+        groupKits[groupSource] = group
+
+        ::continue::
     end
 
     for _, source in kit(getEditor():getSourceLibrary()) do

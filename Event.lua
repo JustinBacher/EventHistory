@@ -12,5 +12,7 @@ function Instance:setup(data)
 end
 
 function Instance:Replay()
-    self.action:run(self.args)
+    if self.action then
+        self.action:run(self.args)
+    end
 end
