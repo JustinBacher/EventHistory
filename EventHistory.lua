@@ -1,6 +1,7 @@
 require "util"
 
 Instance.properties = properties({
+    {name="ClearHistory", type="Action"},
     {name="Events", type="ObjectSet", ui={readonly=true}},
 })
 
@@ -11,6 +12,14 @@ function Instance:onInit(constructor_type)
     self.queue = {}
 
     getEditor():getSourceLibrary():addEventListener("onUpdate", self, self.gatherAllAlerts)
+end
+
+function Instance:ShowSettings()
+    getUI():select(self.settings)
+end
+function Instance:ClearHistory()
+    self.queue = {}
+    self:clearEvents()
 end
 
 function Instance:onPostInit(constructor_type)
