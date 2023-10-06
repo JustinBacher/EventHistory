@@ -60,6 +60,9 @@ end
 
 function Instance:onEnabledUpdate()
     self.enabled = self.properties:getPropertyByIndex(2):getValue()
+    if not self.enabled then
+        self:getParent():getParent():toggleEnableDisable(true)
+    end
 
     if self:ensureUtility() and not self.enabled then
         self.utility:removeEventsForAlert(self:getAlert())
